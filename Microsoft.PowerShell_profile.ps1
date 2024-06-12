@@ -11,14 +11,16 @@
 # }
 
 $customMarker = "<custom>"
-$customMarkerBI = "<customBI>"
 $workingDirC = "C:\Transfer"
 $workingDirD = "D:\Transfer"
 
 # Boss Info
 
-# $msiFile='C:\Develop\Repos\ASSL\archiverestapi\.build\NoBld-20240516131835\output\TRG_DL\Release\AnyCPU\Setup\Pmc.ArchiveRestAPI_TRG_DL 1.2.9 AnyCPU.msi'
-# $targetDir = "$env:Programfiles\Pmc Archive Rest API TRG Download"
+$customMarkerBI = "<customBI>"
+
+# BOSSINFO_DMS_LOGDIR
+# BOSSINFO_DMS_SERVICE_USER
+# BOSSINFO_DMS_SERVICE_USER_PWD
 
 # Install-Msi $msiFile $targetDir
 
@@ -81,6 +83,23 @@ Set-Alias -Name Generate-Setup-Release-AnyCPU -Value GenerateSetupReleaseAnyCPU 
 Set-Alias -Name Generate-Setup-Release-x86 -Value GenerateSetupReleaseX86 -Description $customMarkerBI
 Set-Alias -Name Generate-Setup-TRG-10 -Value GenerateSetupTrgTen -Description $customMarkerBI
 
+# Code Conversion
+function ConvertAssemblyInfoVbRecursively()
+{
+	# Sample call:
+	
+	# cd C:\Develop\Repos\importservice-anyfiletype\source\Specific
+	# Convert-AssemblyInfo-Vb-Recursively
+
+	$files = (Get-ChildItem -Path . -Filter AssemblyInfo.vb -Recurse -ErrorAction SilentlyContinue -Force).FullName
+	
+	foreach ($f in $files)
+	{
+		C:\ProgrammeManuell\CodeConverterSingleFile\CodeConverterSingleFile.exe $f
+	}
+}
+Set-Alias -Name Convert-AssemblyInfo-Vb-Recursively -Value ConvertAssemblyInfoVbRecursively -Description $customMarkerBI
+
 # Services
 function ModifyLocalService($serviceName)
 {
@@ -88,17 +107,21 @@ function ModifyLocalService($serviceName)
 	# Set start type to manual
 	# Switch the log on account
 
-	$username = ".\dgService"
-	$secretFile = 'C:\Admin\secrets\biDmsServicePassword'
-
 	StopServiceAndWait $serviceName
-	
+
 	Set-Service -Name $serviceName -StartupType Manual
 
-	$password = Get-Content $secretFile | ConvertTo-SecureString
+	$username = $Env:BOSSINFO_DMS_SERVICE_USER
+	#$username = ".\dgService"
+
+	$password = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($Env:BOSSINFO_DMS_SERVICE_USER_PWD))
+	$securePassword = ConvertTo-SecureString -String $password -AsPlainText -Force
+
+	# $secretFile = 'C:\Admin\secrets\biDmsServicePassword'
+	# $securePassword = Get-Content $secretFile | ConvertTo-SecureString
 	
-	$creds = new-object -typename System.Management.Automation.PSCredential `
-			 -argumentlist $username, $password
+	$creds = New-Object -TypeName System.Management.Automation.PSCredential `
+			 -ArgumentList $username, $securePassword
 	
 	Set-Service -Name $serviceName -Credential $creds	
 }
