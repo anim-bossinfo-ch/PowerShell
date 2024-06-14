@@ -4,6 +4,13 @@
 
 $customMarkerBI = "<customBI>"
 
+function flistcustomaliases-bossinfo
+{
+  flistcustomaliasesForMarker $customMarkerBI
+}
+
+Set-Alias -Name List-Custom-Aliases-BossInfo -Value flistcustomaliases-bossinfo -Description $customMarker
+
 # BOSSINFO_DMS_LOGDIR
 # BOSSINFO_DMS_SERVICE_USER
 # BOSSINFO_DMS_SERVICE_USER_PWD
