@@ -4,12 +4,12 @@
 
 $customMarkerBI = "<customBI>"
 
-function flistcustomaliases-bossinfo
+function ListCustomAliasesBossInfo
 {
   flistcustomaliasesForMarker $customMarkerBI
 }
 
-Set-Alias -Name List-Custom-Aliases-BossInfo -Value flistcustomaliases-bossinfo -Description $customMarker
+Set-Alias -Name List-Custom-Aliases-BossInfo -Value ListCustomAliasesBossInfo -Description $customMarker
 
 # BOSSINFO_DMS_LOGDIR
 # BOSSINFO_DMS_SERVICE_USER
@@ -29,7 +29,9 @@ function InstallMsi($msiFile, $targetDir)
 		'Wait'             = $true
 		'PassThru'         = $true
 	}
-	$process = Start-Process @startProcessParams
+	
+	Start-Process @startProcessParams
+	#$process = Start-Process @startProcessParams
 }
 Set-Alias -Name Install-Msi -Value InstallMsi -Description $customMarkerBI
 
