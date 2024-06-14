@@ -14,7 +14,7 @@ $customMarker = "<custom>"
 $workingDirC = "C:\Transfer"
 $workingDirD = "D:\Transfer"
 
-# Boss Info
+# BossInfo
 
 $customMarkerBI = "<customBI>"
 
@@ -101,18 +101,20 @@ function ConvertAssemblyInfoVbRecursively()
 Set-Alias -Name Convert-AssemblyInfo-Vb-Recursively -Value ConvertAssemblyInfoVbRecursively -Description $customMarkerBI
 
 # Services
-function ModifyLocalService($serviceName)
+function ModifyLocalService()
 {
+	param (
+    	[String] $ServiceName
+	)
 	# Stop service
 	# Set start type to manual
 	# Switch the log on account
 
-	StopServiceAndWait $serviceName
+	StopServiceAndWait $ServiceName
 
-	Set-Service -Name $serviceName -StartupType Manual
+	Set-Service -Name $ServiceName -StartupType Manual
 
 	$username = $Env:BOSSINFO_DMS_SERVICE_USER
-	#$username = ".\dgService"
 
 	$password = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($Env:BOSSINFO_DMS_SERVICE_USER_PWD))
 	$securePassword = ConvertTo-SecureString -String $password -AsPlainText -Force
@@ -123,9 +125,23 @@ function ModifyLocalService($serviceName)
 	$creds = New-Object -TypeName System.Management.Automation.PSCredential `
 			 -ArgumentList $username, $securePassword
 	
-	Set-Service -Name $serviceName -Credential $creds	
+	Set-Service -Name $ServiceName -Credential $creds	
 }
 Set-Alias -Name Modify-Local-Service -Value ModifyLocalService -Description $customMarkerBI
+
+# ArgumentCompleter BossInfo
+
+$scriptBlock = {
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameters)
+
+	(Get-WmiObject -ComputerName . -Class Win32_Service).Name | Where-Object {
+        $_ -like "$wordToComplete*"
+    } | ForEach-Object {
+          "$_"
+	}
+}
+
+Register-ArgumentCompleter -CommandName ModifyLocalService -ParameterName ServiceName -ScriptBlock $scriptBlock
 
 function StartServiceAndWait($serviceName)
 {
@@ -390,4 +406,18 @@ Set-Alias -Name gics -Value GitIgnoreCSharp -Description $customMarker
 #   }
 # }
 
+# ArgumentCompleter
+$s = {
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameters)
+    $services = Get-Service | Where-Object {$_.Status -eq "Running" -and $_.Name -like "$wordToComplete*"}
+    $services | ForEach-Object {
+        New-Object -Type System.Management.Automation.CompletionResult -ArgumentList $_.Name,
+            $_.Name,
+            "ParameterValue",
+            $_.Name
+    }
+}
+Register-ArgumentCompleter -CommandName Stop-Service -ParameterName Name -ScriptBlock $s
+
+# oh-my-posh
 oh-my-posh init pwsh --config "$env:POSH_THEMES_PATH/freax.json" | Invoke-Expression
