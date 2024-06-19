@@ -47,9 +47,13 @@ function GenerateSetupDebug($customerAbbreviation)
 	GenerateSetup $customerAbbreviation 'Debug'
 }
 
-function GenerateSetupRelease($customerAbbreviation)
+function GenerateSetupRelease()
 {
-	GenerateSetup $customerAbbreviation 'Release'
+	param (
+    	[String] $CustomerAbbreviation
+	)
+
+	GenerateSetup $CustomerAbbreviation 'Release'
 }
 
 function GenerateSetupReleaseAnyCPU($customerAbbreviation)
@@ -77,6 +81,33 @@ Set-Alias -Name Generate-Setup-Release -Value GenerateSetupRelease -Description 
 Set-Alias -Name Generate-Setup-Release-AnyCPU -Value GenerateSetupReleaseAnyCPU -Description $customMarkerBI
 Set-Alias -Name Generate-Setup-Release-x86 -Value GenerateSetupReleaseX86 -Description $customMarkerBI
 Set-Alias -Name Generate-Setup-TRG-10 -Value GenerateSetupTrgTen -Description $customMarkerBI
+
+$scriptBlockCustAbbr = {
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameters)
+
+	$specificDir = GetSpecificDir
+
+	GetSpecificCustomerAbbreviations $specificDir | Where-Object {
+        $_ -like "$wordToComplete*"
+    } | ForEach-Object {
+          "$_"
+	}
+}
+
+Register-ArgumentCompleter -CommandName GenerateSetupDebug -ParameterName CustomerAbbreviation -ScriptBlock $scriptBlockCustAbbr
+Register-ArgumentCompleter -CommandName GenerateSetupRelease -ParameterName CustomerAbbreviation -ScriptBlock $scriptBlockCustAbbr
+Register-ArgumentCompleter -CommandName GenerateSetupReleaseAnyCPU -ParameterName CustomerAbbreviation -ScriptBlock $scriptBlockCustAbbr
+Register-ArgumentCompleter -CommandName GenerateSetupReleaseX86 -ParameterName CustomerAbbreviation -ScriptBlock $scriptBlockCustAbbr
+
+function GetSpecificDir
+{
+	Get-ChildItem . -Directory -recurse -Filter specific 
+}
+
+function GetSpecificCustomerAbbreviations($specificDir)
+{
+	(Get-ChildItem $specificDir).Name
+}
 
 # Code Conversion
 function ConvertAssemblyInfoVbRecursively()
@@ -106,9 +137,17 @@ function ModifyLocalService()
 	# Set start type to manual
 	# Switch the log on account
 
+	Write-Host "ServiceName: $ServiceName"
+
+	Write-Host "Stopping..."
+
 	StopServiceAndWait $ServiceName
 
+	Write-Host "Set start type to manual..."
+
 	Set-Service -Name $ServiceName -StartupType Manual
+
+	Write-Host "Switch the log on account..."
 
 	$username = $Env:BOSSINFO_DMS_SERVICE_USER
 
