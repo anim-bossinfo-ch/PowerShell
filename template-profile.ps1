@@ -3,6 +3,7 @@ function CloneAndPullAndDotSourceScript($targetDir, $cloneUrl, $repoName) {
     {
         New-Item -ItemType Directory -Force -Path $targetDir
         git -C $targetDir clone $cloneUrl | out-null
+        return
     }
 
     $repoPath = Join-Path -Path $targetDir -ChildPath $repoName
@@ -16,12 +17,12 @@ $targetDir = 'C:\Admin\freaxnx01'
 $repoName = 'powershell'
 $cloneUrl = "https://github.com/freaxnx01/$repoName.git"
 $customProfile = CloneAndPullAndDotSourceScript $targetDir $cloneUrl $repoName
-Write-Host $customProfile
+#Write-Host $customProfile
 . $customProfile
 
 $targetDir = 'C:\Admin\anim-bossinfo-ch'
 $repoName = 'PowerShell'
 $cloneUrl = "https://github.com/anim-bossinfo-ch/$repoName.git"
 $customProfile = CloneAndPullAndDotSourceScript $targetDir $cloneUrl $repoName
-Write-Host $customProfile
+#Write-Host $customProfile
 . $customProfile
