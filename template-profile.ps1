@@ -7,15 +7,18 @@ function CloneAndPullAndDotSourceScript($targetDir, $cloneUrl, $repoName) {
 
     $repoPath = Join-Path -Path $targetDir -ChildPath $repoName
     git -C $repoPath pull | out-null
-    . "$repoPath\Microsoft.PowerShell_profile.ps1"
+    Write-Host $repoPath\Microsoft.PowerShell_profile.ps1
+    return "$repoPath\Microsoft.PowerShell_profile.ps1"
 }
 
 $targetDir = 'C:\Admin\freaxnx01'
 $repoName = 'powershell'
 $cloneUrl = "https://github.com/freaxnx01/$repoName.git"
-CloneAndPullAndDotSourceScript $targetDir $cloneUrl $repoName
+$customProfile = CloneAndPullAndDotSourceScript $targetDir $cloneUrl $repoName
+. $customProfile
 
 $targetDir = 'C:\Admin\anim-bossinfo-ch'
 $repoName = 'PowerShell'
 $cloneUrl = "https://github.com/anim-bossinfo-ch/$repoName.git"
-CloneAndPullAndDotSourceScript $targetDir $cloneUrl $repoName
+$customProfile = CloneAndPullAndDotSourceScript $targetDir $cloneUrl $repoName
+. $customProfile
