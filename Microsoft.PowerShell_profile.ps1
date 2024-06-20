@@ -4,6 +4,8 @@
 
 $customMarkerBI = "<customBI>"
 
+# ListCustomAliasesBossInfo
+
 function ListCustomAliasesBossInfo
 {
   flistcustomaliasesForMarker $customMarkerBI
@@ -11,9 +13,44 @@ function ListCustomAliasesBossInfo
 
 Set-Alias -Name List-Custom-Aliases-BossInfo -Value ListCustomAliasesBossInfo -Description $customMarker
 
+# Environment variables
+
 # BOSSINFO_DMS_LOGDIR
 # BOSSINFO_DMS_SERVICE_USER
 # BOSSINFO_DMS_SERVICE_USER_PWD
+
+function ListBossInfoEnvironmentVariables
+{
+	Write-Host "BOSSINFO_DMS_LOGDIR`t$env:BOSSINFO_DMS_LOGDIR"
+	Write-Host "BOSSINFO_DMS_SERVICE_USER`t$env:BOSSINFO_DMS_SERVICE_USER"
+	Write-Host "BOSSINFO_DMS_SERVICE_USER_PWD`t$env:BOSSINFO_DMS_SERVICE_USER_PWD"
+}
+
+Set-Alias -Name List-BossInfo-Environment-Variables -Value ListBossInfoEnvironmentVariables -Description $customMarker
+
+function SetBossInfoEnvironmentVariables
+{
+	$envVarName = 'BOSSINFO_DMS_LOGDIR'
+	$default = 'C:\Logs'
+	if (!($value = Read-Host "Please enter $envVarName [Default <Enter> = $default]")) { $value = $default }
+	Write-Host "Setting environment variable..."
+	[Environment]::SetEnvironmentVariable($envVarName, $value, "Machine")
+	
+	$envVarName = 'BOSSINFO_DMS_SERVICE_USER'
+	$default = '.\dgService'
+	if (!($value = Read-Host "Please enter $envVarName [Default <Enter> = $default]")) { $value = $default }
+	Write-Host "Setting environment variable..."
+	[Environment]::SetEnvironmentVariable($envVarName, $value, "Machine")
+	
+	$envVarName = 'BOSSINFO_DMS_SERVICE_USER_PWD'
+	$default = ''
+	$value = Read-Host "Please enter $envVarName" -MaskInput
+	$valueEncoded = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($value))
+	Write-Host "Setting environment variable..."
+	[Environment]::SetEnvironmentVariable($envVarName, $valueEncoded, "Machine")
+}
+
+Set-Alias -Name Set-BossInfo-Environment-Variables -Value SetBossInfoEnvironmentVariables -Description $customMarker
 
 # Install-Msi $msiFile $targetDir
 
